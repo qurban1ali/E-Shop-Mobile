@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Dimensions,
   StatusBar,
-  FlatList,
+  ScrollView,
   Linking,
 } from "react-native";
 import { router, useGlobalSearchParams } from "expo-router";
@@ -214,37 +214,39 @@ export default function ShopDetailsScreen() {
     </View>
   );
 
-  const renderProductItem = ({ item }: { item: any }) => (
-    <TouchableOpacity className="bg-white rounded-2xl shadow-lg mb-4 overflow-hidden border border-gray-100" style={{ width: (width - 48) / 2 }} onPress={() => router.push({ pathname: "/(routes)/product", params: { id: item._id } })}>
-      <View className="relative">
-        <Image source={{ uri: item.images?.[0]?.url || "https://images.unsplash.com/photo-1505740420928-5e560c0d30e" }} className="w-full h-40 bg-gray-100" resizeMode="cover" />
-      </View>
-
-      <View className="p-4">
-        <Text className="font-poppins-semibold text-gray-900 mb-2 text-sm" numberOfLines={2}>{item?.title}</Text>
-        <View className="flex-row items-center justify-between mb-2">
-          <View className="flex-row items-center">
-            <Text className="text-lg font-poppins-bold text-gray-900">${item.sale_price}</Text>
-            {item.regular_price && <Text className="text-sm text-gray-400 line-through ml-2 font-poppins-medium">${item.regular_price}</Text>}
-          </View>
-          <View className="flex-row items-center">
-            <Ionicons name="star" size={12} color="#FCD34D" />
-            <Text className="text-sm text-gray-600 ml-1 font-poppins-medium">{item.ratings}</Text>
-          </View>
+  const renderProductItem = ({ item }: { item: any }) => {
+    return (
+      <TouchableOpacity className="bg-white rounded-2xl shadow-lg mb-4 overflow-hidden border border-gray-100" style={{ width: (width - 48) / 2 }} onPress={() => router.push({ pathname: "/(routes)/product", params: { id: item._id } })}>
+        <View className="relative">
+          <Image source={{ uri: item.images?.[0]?.url || "https://images.unsplash.com/photo-1505740420928-5e560c0d30e" }} className="w-full h-40 bg-gray-100" resizeMode="cover" />
         </View>
 
-        <Text>{item.totalSales} sold</Text>
-      </View>
-    </TouchableOpacity>
-  );
+        <View className="p-4">
+          <Text className="font-poppins-semibold text-gray-900 mb-2 text-sm" numberOfLines={2}>{item?.title}</Text>
+          <View className="flex-row items-center justify-between mb-2">
+            <View className="flex-row items-center">
+              <Text className="text-lg font-poppins-bold text-gray-900">${item.sale_price}</Text>
+              {item.regular_price && <Text className="text-sm text-gray-400 line-through ml-2 font-poppins-medium">${item.regular_price}</Text>}
+            </View>
+            <View className="flex-row items-center">
+              <Ionicons name="star" size={12} color="#FCD34D" />
+              <Text className="text-sm text-gray-600 ml-1 font-poppins-medium">{item.ratings}</Text>
+            </View>
+          </View>
+
+          <Text>{item.totalSales} sold</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderTabContent = () => {
     if (activeTab === "Products") {
       return (
         <View className="px-4 mt-6">
           {productsLoading ? (
-            <View className="flex-row justify-between">
-              {[1, 2].map((idx) => (
+            <View className="flex-row flex-wrap justify-between">
+              {[1, 2, 3, 4].map((idx) => (
                 <View key={idx} className="bg-white rounded-2xl shadow-lg mb-4 overflow-hidden border border-gray-100" style={{ width: (width - 48) / 2 }}>
                   <View className="w-full h-40 bg-gray-200" />
                   <View className="p-4">
@@ -255,22 +257,20 @@ export default function ShopDetailsScreen() {
                 </View>
               ))}
             </View>
-          ) : (
-            <FlatList
-              data={products || []}
-              renderItem={renderProductItem}
-              numColumns={2}
-              columnWrapperStyle={{ justifyContent: "space-between" }}
-              ItemSeparatorComponent={() => <View className="h-4" />}
-              showsVerticalScrollIndicator={false}
-              keyExtractor={(item: any) => item._id?.toString() || item.id?.toString() || item.slug}
-              ListEmptyComponent={() => (
-                <View className="items-center py-8">
-                  <Ionicons name="cube-outline" size={48} color="#9CA3AF" />
-                  <Text className="text-gray-500 font-poppins-medium mt-2">No Product available yet!</Text>
+          ) : products && products.length > 0 ? (
+            <View className="flex-row flex-wrap justify-between">
+              {products.map((item: any, index: number) => (
+                <View key={item._id?.toString() || item.id?.toString() || item.slug || index}>
+                  {renderProductItem({ item })}
+                  {(index + 1) % 2 === 0 && <View className="h-4 w-full" />}
                 </View>
-              )}
-            />
+              ))}
+            </View>
+          ) : (
+            <View className="items-center py-8">
+              <Ionicons name="cube-outline" size={48} color="#9CA3AF" />
+              <Text className="text-gray-500 font-poppins-medium mt-2">No Product available yet!</Text>
+            </View>
           )}
         </View>
       );
@@ -316,21 +316,23 @@ export default function ShopDetailsScreen() {
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-gray-50">
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
 
-      {renderHeader()}
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {renderHeader()}
 
-      <View className="px-4 mt-6">
-        <View className="flex-row bg-gray-100 rounded-2xl p-1">
-          {["Products", "Offers", "Reviews"].map((tab) => (
-            <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)} className={`flex-1 py-3 rounded-xl ${activeTab === tab ? "bg-white" : ""}`}>
-              <Text className={`text-center font-poppins-semibold ${activeTab === tab ? "text-blue-600" : "text-gray-600"}`}>{tab}</Text>
-            </TouchableOpacity>
-          ))}
+        <View className="px-4 mt-6">
+          <View className="flex-row bg-gray-100 rounded-2xl p-1">
+            {["Products", "Offers", "Reviews"].map((tab) => (
+              <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)} className={`flex-1 py-3 rounded-xl ${activeTab === tab ? "bg-white" : ""}`}>
+                <Text className={`text-center font-poppins-semibold ${activeTab === tab ? "text-blue-600" : "text-gray-600"}`}>{tab}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
-      </View>
 
-      {renderTabContent()}
+        {renderTabContent()}
 
-      <View className="h-20" />
+        <View className="h-20" />
+      </ScrollView>
     </SafeAreaView>
   );
 }

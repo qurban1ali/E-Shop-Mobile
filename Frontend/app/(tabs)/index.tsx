@@ -157,7 +157,10 @@ export default function Index() {
                }}>
                  Top Shops
                </Text>
-               <TouchableOpacity  className="flex-row items-center bg-blue-50 px-3 py-2 rounded-full">
+               <TouchableOpacity
+                 onPress={() => router.push("/(routes)/shops")}
+                 className="flex-row items-center bg-blue-50 px-3 py-2 rounded-full"
+               >
                 <Text className="text-blue-600 font-bold text-sm">
                   See All
                 </Text>

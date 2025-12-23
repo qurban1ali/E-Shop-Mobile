@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Dimensions,
   StatusBar,
-  FlatList,
+  ScrollView,
   Linking,
 } from "react-native";
 import { router, useGlobalSearchParams } from "expo-router";
@@ -450,8 +450,8 @@ export default function ShopDetailsScreen() {
       return (
         <View className="px-4 mt-6">
           {productsLoading ? (
-            <View className="flex-row justify-between">
-              {[1, 2].map((idx) => (
+            <View className="flex-row flex-wrap justify-between">
+              {[1, 2, 3, 4].map((idx) => (
                 <View
                   key={idx}
                   className="bg-white rounded-2xl shadow-lg mb-4 overflow-hidden border border-gray-100"
@@ -466,26 +466,22 @@ export default function ShopDetailsScreen() {
                 </View>
               ))}
             </View>
-          ) : (
-            <FlatList
-              data={products || []}
-              renderItem={renderProductItem}
-              numColumns={2}
-              columnWrapperStyle={{ justifyContent: "space-between" }}
-              ItemSeparatorComponent={() => <View className="h-4" />}
-              showsVerticalScrollIndicator={false}
-              keyExtractor={(item: any) =>
-                item._id?.toString() || item.id?.toString() || item.slug
-              }
-              ListEmptyComponent={() => (
-                <View className="items-center py-8">
-                  <Ionicons name="cube-outline" size={48} color="#9CA3AF" />
-                  <Text className="text-gray-500 font-medium mt-2">
-                    No Product available yet!
-                  </Text>
+          ) : products && products.length > 0 ? (
+            <View className="flex-row flex-wrap justify-between">
+              {products.map((item: any, index: number) => (
+                <View key={item._id?.toString() || item.id?.toString() || item.slug || index}>
+                  {renderProductItem({ item })}
+                  {(index + 1) % 2 === 0 && <View className="h-4 w-full" />}
                 </View>
-              )}
-            />
+              ))}
+            </View>
+          ) : (
+            <View className="items-center py-8">
+              <Ionicons name="cube-outline" size={48} color="#9CA3AF" />
+              <Text className="text-gray-500 font-medium mt-2">
+                No Product available yet!
+              </Text>
+            </View>
           )}
         </View>
       );
@@ -570,6 +566,8 @@ export default function ShopDetailsScreen() {
         </View>
 
         {renderTabContent()}
+
+        <View className="h-20" />
       </ScrollView>
     </SafeAreaView>
   );
